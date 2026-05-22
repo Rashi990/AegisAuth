@@ -1,0 +1,1 @@
+Secure JWT Authentication Service built with Spring Boot and Spring Security featuring role-based access control and stateless authentication.
