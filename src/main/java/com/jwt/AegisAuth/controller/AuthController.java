@@ -1,16 +1,15 @@
 package com.jwt.AegisAuth.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/home")
-public class HomeController {
+@RequestMapping("/api/v1/auth")
+public class AuthController {
 
-    @GetMapping("/")
-    public String getHello(){
-        return "hi";
+    @PostMapping("/login")
+    public String login(){
+        return "user login";
     }
 }
