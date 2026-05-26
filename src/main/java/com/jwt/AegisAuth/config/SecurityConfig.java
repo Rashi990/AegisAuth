@@ -19,7 +19,8 @@ public class SecurityConfig {
                 .sessionManagement(s->s.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(r->r.
-                        requestMatchers("api/v1/auth/**").permitAll().
+//                        requestMatchers("api/v1/auth/**").permitAll().
+                        requestMatchers("api/v1/auth/login").permitAll().
                         anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())

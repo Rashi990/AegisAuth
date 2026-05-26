@@ -1,15 +1,25 @@
 package com.jwt.AegisAuth.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.jwt.AegisAuth.service.JWTService;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
+    private final JWTService jwtService;
+
+    public AuthController(JWTService jwtService) {
+        this.jwtService = jwtService;
+    }
+
     @PostMapping("/login")
     public String login(){
-        return "user login";
+        return jwtService.getJWTToken();
+    }
+
+    @GetMapping("/username")
+    public String getUsername(@RequestParam String token){
+        return jwtService.getUsername(token);
     }
 }
