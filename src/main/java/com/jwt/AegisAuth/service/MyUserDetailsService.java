@@ -1,25 +1,32 @@
 package com.jwt.AegisAuth.service;
 
+import com.jwt.AegisAuth.entity.UserEntity;
+import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+@Service
 public class MyUserDetailsService implements UserDetailsService {
 
-    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
-    public MyUserDetailsService(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
+    public MyUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserEntity userData = userRepository.findByUsername(username).orElse(null);
+
+        if (userData == null) throw new UsernameNotFoundException("User not found");
 
         UserDetails user = User.builder()
-                .username("rash")
-                .password(passwordEncoder.encode("rash"))
+                .username(userData.getUsername())
+                .password(userData.getPassword())
                 .build();
         return user;
     }
