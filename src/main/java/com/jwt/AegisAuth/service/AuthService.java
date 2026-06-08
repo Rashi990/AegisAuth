@@ -2,9 +2,12 @@ package com.jwt.AegisAuth.service;
 
 import com.jwt.AegisAuth.dto.LoginRequestDTO;
 import com.jwt.AegisAuth.dto.LoginResponseDTO;
+import com.jwt.AegisAuth.dto.RegisterRequestDTO;
+import com.jwt.AegisAuth.dto.RegisterResponseDTO;
 import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,7 @@ public class AuthService {
         return userRepository.findAll();
     }
 
-    public UserEntity createUser(UserEntity userData){
+    public UserEntity createUser(RegisterRequestDTO userData){
         UserEntity newUser = UserEntity.builder()
                 .name(userData.getName())
                 .email(userData.getEmail())
@@ -52,12 +55,8 @@ public class AuthService {
                             loginRequestDTO.getUsername(),
                             loginRequestDTO.getPassword())
                     );
-        }catch (Exception e){
-            return new LoginResponseDTO(
-                    null,
-                    null,
-                    "Invalid username or password",
-                    "error");
+        }catch (BadCredentialsException e){
+            return new LoginResponseDTO(null, null, "Invalid username or password", "error");
         }
 
         //Fetch real user from DB
@@ -73,14 +72,20 @@ public class AuthService {
         String token = jwtService.getJWTToken(user.getUsername(), claims);
 
         //debug
-        System.out.println("Role from token: " +
-                jwtService.getFieldFromToken(token,"role"));
+        System.out.println("Role from token: " + jwtService.getFieldFromToken(token,"role"));
 
-        return new LoginResponseDTO(
-              token,
-              LocalDateTime.now(),
-              null,
-                "Login successful");
+        return new LoginResponseDTO(token, LocalDateTime.now(), null, "SUCCESS");
+    }
+
+    public RegisterResponseDTO register(RegisterRequestDTO req){
+        if (isUserEnable(req.getUsername())){
+            return new RegisterResponseDTO(null, "User already exist in the system");
+        }
+        var userData = this.createUser(req);
+        if (userData.getId()==null){
+            return new RegisterResponseDTO(null, "System error");
+        }
+        return new RegisterResponseDTO(String.format("user registered at %s", userData.getId()),null);
     }
 
     private Boolean isUserEnable(String username){

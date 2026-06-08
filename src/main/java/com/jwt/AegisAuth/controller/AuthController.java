@@ -2,6 +2,8 @@ package com.jwt.AegisAuth.controller;
 
 import com.jwt.AegisAuth.dto.LoginRequestDTO;
 import com.jwt.AegisAuth.dto.LoginResponseDTO;
+import com.jwt.AegisAuth.dto.RegisterRequestDTO;
+import com.jwt.AegisAuth.dto.RegisterResponseDTO;
 import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.service.AuthService;
 import com.jwt.AegisAuth.service.JWTService;
@@ -24,26 +26,33 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO){
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
         LoginResponseDTO res = authService.login(loginRequestDTO);
-        if (res.getError()!=null) {
+        if (res.getError() != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        }
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<RegisterResponseDTO> register(@RequestBody RegisterRequestDTO req) {
+        RegisterResponseDTO res = authService.register(req);
+        if (res.getError() != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         }
         return ResponseEntity.ok(res);
     }
 
     @GetMapping("/username")
-    public String getUsername(@RequestParam String token){
+    public String getUsername(@RequestParam String token) {
         return jwtService.getUsername(token);
     }
 
     @GetMapping("/users")
-    public List<UserEntity> getAllUsers(){
+    public List<UserEntity> getAllUsers() {
         return authService.getAllUsers();
     }
 
-    @PostMapping("/create-user")
-    public UserEntity createUser(@RequestBody UserEntity user){
-        return authService.createUser(user);
-    }
 }
+
+

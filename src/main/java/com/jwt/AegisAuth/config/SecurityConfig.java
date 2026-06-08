@@ -34,12 +34,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(c->c.disable())
-                .sessionManagement(s->s.
+                .sessionManagement(session->session.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(r->r.
-//                        requestMatchers("/api/v1/auth/**").permitAll().
-                        requestMatchers("/api/v1/auth/login").permitAll().
-                        anyRequest().authenticated()
+                .authorizeHttpRequests(auth->auth
+
+                                // Public endpoints
+                                .requestMatchers(
+                                        "/api/v1/auth/login",
+                                        "/api/v1/auth/register",
+                                        "/api/v1/home/**"
+                                ).permitAll()
+
+                                // Everything else secured
+                                .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
