@@ -45,8 +45,6 @@ public class AuthService {
     }
 
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO){
-//      Boolean userPresent = isUserEnable(loginRequestDTO.getUsername());
-//      if (!userPresent) return new LoginResponseDTO(null,null,"User not found","error");
 
         try {
             authenticationManager.authenticate
@@ -58,15 +56,25 @@ public class AuthService {
             return new LoginResponseDTO(
                     null,
                     null,
-                    "User not found",
+                    "Invalid username or password",
                     "error");
         }
 
-        Map<String, Object> claims = new HashMap<String,Object>();
-        claims.put("role","User");
-        claims.put("email","company@gmail.com");
+        //Fetch real user from DB
+        UserEntity user = userRepository
+                .findByUsername(loginRequestDTO.getUsername())
+                .orElseThrow(()->new RuntimeException("User not found"));
 
-        String token = jwtService.getJWTToken(loginRequestDTO.getUsername(),claims);
+        Map<String, Object> claims = new HashMap<String,Object>();
+        claims.put("role","USER");
+        claims.put("email",user.getEmail());
+        claims.put("username", user.getUsername());
+
+        String token = jwtService.getJWTToken(user.getUsername(), claims);
+
+        //debug
+        System.out.println("Role from token: " +
+                jwtService.getFieldFromToken(token,"role"));
 
         return new LoginResponseDTO(
               token,
