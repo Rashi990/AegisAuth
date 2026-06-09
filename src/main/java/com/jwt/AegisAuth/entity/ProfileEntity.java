@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,19 +12,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Data
 @Builder
-@Document(collection = "user")
-public class UserEntity {
+@Document(collection = "profile")
+public class ProfileEntity {
 
     @Id
     private String id;
-    private String name;
-    private String email;
-    @Indexed(unique = true)
-    private String username;
-    private String password;
+    private String image;
+    private Boolean status;
 
     //One-to-one relationship
     @DBRef
-    private ProfileEntity profile;
-
+    private UserEntity user;
 }

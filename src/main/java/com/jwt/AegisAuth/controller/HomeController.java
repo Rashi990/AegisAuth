@@ -25,7 +25,6 @@ public class HomeController {
         Map<String, Object> res = new HashMap<>();
         res.put("status", "UP");
         res.put("service", "AegisAuth");
-        res.put("timestamp", LocalDateTime.now());
 
         return ResponseEntity.ok(res);
     }

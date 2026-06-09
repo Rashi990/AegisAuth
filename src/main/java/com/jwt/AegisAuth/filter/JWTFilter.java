@@ -44,8 +44,8 @@ public class JWTFilter extends OncePerRequestFilter {
            return;
         };
 
-        String jwt_token = authorization.substring(7);
-        String username = jwtService.getUsername(jwt_token);
+        String jwtToken = authorization.substring(7);
+        String username = jwtService.getUsername(jwtToken);
 
         if (username == null){
             filterChain.doFilter(request,response);
