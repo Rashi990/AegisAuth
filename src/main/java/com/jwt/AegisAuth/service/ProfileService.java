@@ -32,10 +32,7 @@ public class ProfileService {
         ProfileEntity profile = profileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
 
-        return new ProfileDTO(
-                profile.getId(),
-                profile.getImage(),
-                profile.getStatus());
+        return mapToDTO(profile);
     }
 
     //Get profile by userId
@@ -43,10 +40,7 @@ public class ProfileService {
         ProfileEntity profile = profileRepository.findByUserId(userId)
                 .orElseThrow(()->new RuntimeException("Profile not found"));
 
-        return new ProfileDTO(
-                profile.getId(),
-                profile.getImage(),
-                profile.getStatus());
+        return mapToDTO(profile);
     }
 
     //Create profile
@@ -69,10 +63,7 @@ public class ProfileService {
         user.setProfile(savedProfile);
         userRepository.save(user);
 
-        return new ProfileDTO(
-                savedProfile.getId(),
-                savedProfile.getImage(),
-                savedProfile.getStatus());
+        return mapToDTO(savedProfile);
     }
 
     //Update profile
@@ -92,11 +83,7 @@ public class ProfileService {
 
         ProfileEntity updated = profileRepository.save(profile);
 
-        return new ProfileDTO(
-                updated.getId(),
-                updated.getImage(),
-                updated.getStatus()
-        );
+        return mapToDTO(profileRepository.save(profile));
     }
 
     //Delete profile
@@ -114,6 +101,14 @@ public class ProfileService {
         profileRepository.delete(profile);
 
         return "Profile deleted successfully";
+    }
+
+    private ProfileDTO mapToDTO(ProfileEntity profile) {
+        return new ProfileDTO(
+                profile.getId(),
+                profile.getImage(),
+                profile.getStatus()
+        );
 
     }
 }

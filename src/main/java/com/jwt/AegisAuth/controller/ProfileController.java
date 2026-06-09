@@ -2,6 +2,7 @@ package com.jwt.AegisAuth.controller;
 
 import com.jwt.AegisAuth.dto.ProfileDTO;
 import com.jwt.AegisAuth.service.ProfileService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,8 @@ public class ProfileController {
 
     @PostMapping("/create")
     public ResponseEntity<ProfileDTO> createProfile(@RequestBody ProfileDTO profileData) {
-        return ResponseEntity.ok(profileService.createProfile(profileData));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(profileService.createProfile(profileData));
     }
 
     @PutMapping("/update")
