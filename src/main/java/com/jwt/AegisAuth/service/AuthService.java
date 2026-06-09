@@ -1,9 +1,6 @@
 package com.jwt.AegisAuth.service;
 
-import com.jwt.AegisAuth.dto.LoginRequestDTO;
-import com.jwt.AegisAuth.dto.LoginResponseDTO;
-import com.jwt.AegisAuth.dto.RegisterRequestDTO;
-import com.jwt.AegisAuth.dto.RegisterResponseDTO;
+import com.jwt.AegisAuth.dto.*;
 import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,8 +29,11 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    public List<UserEntity> getAllUsers(){
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers(){
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
     public UserEntity createUser(RegisterRequestDTO userData){
@@ -47,6 +47,7 @@ public class AuthService {
         return userRepository.save(newUser);
     }
 
+    //Login
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO){
 
         try {
@@ -77,18 +78,36 @@ public class AuthService {
         return new LoginResponseDTO(token, LocalDateTime.now(), null, "SUCCESS");
     }
 
+    //Register
     public RegisterResponseDTO register(RegisterRequestDTO req){
-        if (isUserEnable(req.getUsername())){
-            return new RegisterResponseDTO(null, "User already exist in the system");
+        if (isUserExist(req.getUsername())) {
+            return new RegisterResponseDTO(null, "User already exists in the system");
         }
-        var userData = this.createUser(req);
-        if (userData.getId()==null){
-            return new RegisterResponseDTO(null, "System error");
+
+        try {
+            UserEntity userData = createUser(req);
+
+            return new RegisterResponseDTO(
+                    "User registered successfully with id: " + userData.getId(),
+                    null
+            );
+
+        } catch (Exception e) {
+            return new RegisterResponseDTO(null, "System error during registration");
         }
-        return new RegisterResponseDTO(String.format("user registered at %s", userData.getId()),null);
     }
 
-    private Boolean isUserEnable(String username){
+    //Check user exists
+    private Boolean isUserExist(String username){
         return userRepository.findByUsername(username).isPresent();
+    }
+
+    private UserDTO mapToDTO(UserEntity user) {
+        return new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getUsername()
+        );
     }
 }

@@ -1,9 +1,6 @@
 package com.jwt.AegisAuth.controller;
 
-import com.jwt.AegisAuth.dto.LoginRequestDTO;
-import com.jwt.AegisAuth.dto.LoginResponseDTO;
-import com.jwt.AegisAuth.dto.RegisterRequestDTO;
-import com.jwt.AegisAuth.dto.RegisterResponseDTO;
+import com.jwt.AegisAuth.dto.*;
 import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.service.AuthService;
 import com.jwt.AegisAuth.service.JWTService;
@@ -49,7 +46,7 @@ public class AuthController {
     }
 
     @GetMapping("/users")
-    public List<UserEntity> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return authService.getAllUsers();
     }
 
