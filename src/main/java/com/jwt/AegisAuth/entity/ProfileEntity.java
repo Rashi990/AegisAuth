@@ -1,5 +1,6 @@
 package com.jwt.AegisAuth.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +23,6 @@ public class ProfileEntity {
 
     //One-to-one relationship
     @DBRef
+    @JsonIgnore
     private UserEntity user;
 }
