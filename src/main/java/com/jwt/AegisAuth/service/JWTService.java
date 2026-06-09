@@ -2,25 +2,29 @@ package com.jwt.AegisAuth.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
 @Service
 public class JWTService {
 
-    private final SecretKey secretKey;
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
-    public JWTService() {
-        try {
-            SecretKey k = KeyGenerator.getInstance("HmacSHA256").generateKey();
-            secretKey = Keys.hmacShaKeyFor(k.getEncoded());
-        } catch (Exception e){
-            throw new RuntimeException(e);
-        }
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init(){
+        secretKey = Keys.hmacShaKeyFor(
+                jwtSecret.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     public String getJWTToken(String username, Map<String,Object> claims){
