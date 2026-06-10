@@ -24,6 +24,7 @@ public class UserEntity {
     @Indexed(unique = true)
     private String username;
     private String password;
+    private String role; // USER or ADMIN
 
     //One-to-one relationship
     @DBRef

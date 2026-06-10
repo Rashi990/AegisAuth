@@ -42,6 +42,7 @@ public class AuthService {
                 .email(userData.getEmail())
                 .username(userData.getUsername())
                 .password(passwordEncoder.encode(userData.getPassword()))
+                .role("USER")
                 .build();
 
         return userRepository.save(newUser);
@@ -66,7 +67,7 @@ public class AuthService {
                 .orElseThrow(()->new RuntimeException("User not found"));
 
         Map<String, Object> claims = new HashMap<String,Object>();
-        claims.put("role","USER");
+        claims.put("role",user.getRole());
         claims.put("email",user.getEmail());
         claims.put("username", user.getUsername());
 

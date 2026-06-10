@@ -1,14 +1,11 @@
 package com.jwt.AegisAuth.controller;
 
 import com.jwt.AegisAuth.dto.*;
-import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.service.AuthService;
 import com.jwt.AegisAuth.service.JWTService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -43,11 +40,6 @@ public class AuthController {
     @GetMapping("/username")
     public String getUsername(@RequestParam String token) {
         return jwtService.getUsername(token);
-    }
-
-    @GetMapping("/users")
-    public List<UserDTO> getAllUsers() {
-        return authService.getAllUsers();
     }
 
 }
