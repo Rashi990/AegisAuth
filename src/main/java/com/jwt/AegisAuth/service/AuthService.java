@@ -2,6 +2,7 @@ package com.jwt.AegisAuth.service;
 
 import com.jwt.AegisAuth.dto.*;
 import com.jwt.AegisAuth.entity.UserEntity;
+import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -64,7 +65,7 @@ public class AuthService {
         //Fetch real user from DB
         UserEntity user = userRepository
                 .findByUsername(loginRequestDTO.getUsername())
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User not found"));
 
         Map<String, Object> claims = new HashMap<String,Object>();
         claims.put("role",user.getRole());

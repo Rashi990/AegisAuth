@@ -20,9 +20,9 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userData = userRepository.findByUsername(username).orElse(null);
-
-        if (userData == null) throw new UsernameNotFoundException("User not found");
+        UserEntity userData = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found"));
 
         UserDetails user = User.builder()
                 .username(userData.getUsername())

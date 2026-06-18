@@ -30,39 +30,41 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
         String authorization = request.getHeader("Authorization");
 
-        if (authorization == null){
+        if (authorization == null || !authorization.startsWith("Bearer ")){
            filterChain.doFilter(request,response);
            return;
         }
 
-        if (!authorization.startsWith("Bearer ")) {
-           filterChain.doFilter(request,response);
-           return;
-        };
-
         String jwtToken = authorization.substring(7);
-        String username = jwtService.getUsername(jwtToken);
+        String username;
+
+        try {
+            username = jwtService.getUsername(jwtToken);
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired JWT token");
+            return;        }
 
         if (username == null){
             filterChain.doFilter(request,response);
            return;
        }
 
-        UserEntity userData = userRepository.findByUsername(username).orElse(null);
+        UserEntity userData = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (userData == null){
-           filterChain.doFilter(request,response);
-           return;
-       }
-
-       if (SecurityContextHolder.getContext().getAuthentication()!=null){
-           filterChain.doFilter(request,response);
-           return;
-       }
+        if (SecurityContextHolder.getContext().getAuthentication() != null &&
+                SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
        UserDetails userDetails = User.builder()
                 .username(userData.getUsername())

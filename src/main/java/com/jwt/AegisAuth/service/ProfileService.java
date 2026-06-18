@@ -3,6 +3,7 @@ package com.jwt.AegisAuth.service;
 import com.jwt.AegisAuth.dto.ProfileDTO;
 import com.jwt.AegisAuth.entity.ProfileEntity;
 import com.jwt.AegisAuth.entity.UserEntity;
+import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.ProfileRepository;
 import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.core.Authentication;
@@ -27,10 +28,10 @@ public class ProfileService {
                 .getName();
 
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ProfileEntity profile = profileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
 
         return mapToDTO(profile);
     }
@@ -38,7 +39,7 @@ public class ProfileService {
     //Get profile by userId
     public ProfileDTO getProfileByUserId(String userId){
         ProfileEntity profile = profileRepository.findByUserId(userId)
-                .orElseThrow(()->new RuntimeException("Profile not found"));
+                .orElseThrow(()->new ResourceNotFoundException("Profile not found"));
 
         return mapToDTO(profile);
     }
@@ -50,7 +51,7 @@ public class ProfileService {
                 .getName();
 
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ProfileEntity profile = ProfileEntity.builder()
                 .image(profileData.getImage())
@@ -73,17 +74,17 @@ public class ProfileService {
                 .getName();
 
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User not found"));
 
         ProfileEntity profile = profileRepository.findByUserId(user.getId())
-                .orElseThrow(()->new RuntimeException("Profile not found"));
+                .orElseThrow(()->new ResourceNotFoundException("Profile not found"));
 
         profile.setImage(profileData.getImage());
         profile.setStatus(profileData.getStatus());
 
         ProfileEntity updated = profileRepository.save(profile);
 
-        return mapToDTO(profileRepository.save(profile));
+        return mapToDTO(updated);
     }
 
     //Delete profile
@@ -93,10 +94,10 @@ public class ProfileService {
                 .getName();
 
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ProfileEntity profile = profileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
 
         profileRepository.delete(profile);
 

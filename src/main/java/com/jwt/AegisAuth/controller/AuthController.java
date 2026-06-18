@@ -37,11 +37,6 @@ public class AuthController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/username")
-    public String getUsername(@RequestParam String token) {
-        return jwtService.getUsername(token);
-    }
-
 }
 
 
