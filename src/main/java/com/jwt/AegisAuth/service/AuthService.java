@@ -2,6 +2,7 @@ package com.jwt.AegisAuth.service;
 
 import com.jwt.AegisAuth.dto.*;
 import com.jwt.AegisAuth.entity.UserEntity;
+import com.jwt.AegisAuth.exception.BadRequestException;
 import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -81,27 +82,22 @@ public class AuthService {
     }
 
     //Register
-    public RegisterResponseDTO register(RegisterRequestDTO req){
-        if (isUserExist(req.getUsername())) {
-            return new RegisterResponseDTO(null, "User already exists in the system");
+    public RegisterResponseDTO register(RegisterRequestDTO req) {
+
+        if (userRepository.findByUsername(req.getUsername()).isPresent()) {
+            throw new BadRequestException("Username already exists");
         }
 
-        try {
-            UserEntity userData = createUser(req);
-
-            return new RegisterResponseDTO(
-                    "User registered successfully with id: " + userData.getId(),
-                    null
-            );
-
-        } catch (Exception e) {
-            return new RegisterResponseDTO(null, "System error during registration");
+        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+            throw new BadRequestException("Email already exists");
         }
-    }
 
-    //Check user exists
-    private Boolean isUserExist(String username){
-        return userRepository.findByUsername(username).isPresent();
+        UserEntity userData = createUser(req);
+
+        return new RegisterResponseDTO(
+                "User registered successfully with id: " + userData.getId(),
+                null
+        );
     }
 
     private UserDTO mapToDTO(UserEntity user) {

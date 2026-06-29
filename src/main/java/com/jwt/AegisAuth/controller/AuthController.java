@@ -3,6 +3,7 @@ package com.jwt.AegisAuth.controller;
 import com.jwt.AegisAuth.dto.*;
 import com.jwt.AegisAuth.service.AuthService;
 import com.jwt.AegisAuth.service.JWTService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponseDTO> register(@RequestBody RegisterRequestDTO req) {
+    public ResponseEntity<RegisterResponseDTO> register(@Valid @RequestBody RegisterRequestDTO req) {
         RegisterResponseDTO res = authService.register(req);
         if (res.getError() != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
