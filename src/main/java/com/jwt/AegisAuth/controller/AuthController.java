@@ -21,7 +21,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         LoginResponseDTO res = authService.login(loginRequestDTO);
         if (res.getError() != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);

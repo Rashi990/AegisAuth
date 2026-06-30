@@ -26,13 +26,13 @@ public class ProfileController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ProfileDTO> createProfile(@RequestBody ProfileDTO profileData) {
+    public ResponseEntity<ProfileDTO> createProfile(@Valid @RequestBody ProfileDTO profileData) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(profileService.createProfile(profileData));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<ProfileDTO> updateProfile(@RequestBody ProfileDTO profileData) {
+    public ResponseEntity<ProfileDTO> updateProfile(@Valid @RequestBody ProfileDTO profileData) {
         return ResponseEntity.ok(profileService.updateProfile(profileData));
     }
 
