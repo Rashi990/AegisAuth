@@ -1,7 +1,9 @@
 package com.jwt.AegisAuth.controller;
 
+import com.jwt.AegisAuth.dto.ChangePasswordDTO;
 import com.jwt.AegisAuth.dto.ProfileDTO;
 import com.jwt.AegisAuth.service.ProfileService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +41,12 @@ public class ProfileController {
         return ResponseEntity.ok(
                 Map.of("message", profileService.deleteProfile())
         );
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDTO dto){
+        profileService.changePassword(dto);
+        return ResponseEntity.ok("Password changed successfully");
     }
 
 }

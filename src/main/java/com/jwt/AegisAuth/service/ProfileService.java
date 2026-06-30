@@ -1,13 +1,16 @@
 package com.jwt.AegisAuth.service;
 
+import com.jwt.AegisAuth.dto.ChangePasswordDTO;
 import com.jwt.AegisAuth.dto.ProfileDTO;
 import com.jwt.AegisAuth.entity.ProfileEntity;
 import com.jwt.AegisAuth.entity.UserEntity;
+import com.jwt.AegisAuth.exception.BadRequestException;
 import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.ProfileRepository;
 import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,10 +18,12 @@ public class ProfileService {
 
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ProfileService(ProfileRepository profileRepository, UserRepository userRepository) {
+    public ProfileService(ProfileRepository profileRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     //Get logged in profile
@@ -102,6 +107,27 @@ public class ProfileService {
         profileRepository.delete(profile);
 
         return "Profile deleted successfully";
+    }
+
+    //Change password
+    public void changePassword(ChangePasswordDTO dto){
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
+
+        if(!passwordEncoder.matches(dto.getOldPassword(),
+                user.getPassword())){
+
+            throw new BadRequestException("Old password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
     }
 
     private ProfileDTO mapToDTO(ProfileEntity profile) {
