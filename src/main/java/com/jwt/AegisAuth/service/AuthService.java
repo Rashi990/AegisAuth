@@ -8,6 +8,7 @@ import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -106,6 +107,24 @@ public class AuthService {
                 user.getName(),
                 user.getEmail(),
                 user.getUsername()
+        );
+    }
+
+    public CurrentUserDTO getCurrentUser(){
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(()->
+                        new ResourceNotFoundException("User not found"));
+
+        return new CurrentUserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole()
         );
     }
 }

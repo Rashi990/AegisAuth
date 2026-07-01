@@ -38,6 +38,11 @@ public class AuthController {
         return ResponseEntity.ok(res);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUserDTO> getCurrentUser(){
+        return ResponseEntity.ok(authService.getCurrentUser());
+    }
+
 }
 
 
