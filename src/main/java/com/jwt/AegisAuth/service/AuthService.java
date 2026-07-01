@@ -5,12 +5,15 @@ import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.exception.BadRequestException;
 import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -39,6 +42,13 @@ public class AuthService {
                 .toList();
     }
 
+    public UserDTO getUserById(String id){
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
+        return mapToDTO(user);
+    }
+
     public UserEntity createUser(RegisterRequestDTO userData){
         UserEntity newUser = UserEntity.builder()
                 .name(userData.getName())
@@ -49,6 +59,13 @@ public class AuthService {
                 .build();
 
         return userRepository.save(newUser);
+    }
+
+    public void deleteUser(String id){
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
+        userRepository.delete(user);
     }
 
     //Login
@@ -127,4 +144,18 @@ public class AuthService {
                 user.getRole()
         );
     }
+
+    public UserDTO updateUserRole(
+            String id,
+            RoleUpdateDTO dto){
+
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
+
+        user.setRole(dto.getRole());
+        return mapToDTO(userRepository.save(user));
+    }
+
+
 }
