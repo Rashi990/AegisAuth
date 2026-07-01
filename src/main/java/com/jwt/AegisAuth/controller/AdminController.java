@@ -26,7 +26,7 @@ public class AdminController {
         return authService.getAllUsers();
     }
 
-    @GetMapping("/user/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable String id){
         return ResponseEntity.ok(authService.getUserById(id));
     }
@@ -36,6 +36,12 @@ public class AdminController {
             @PathVariable String id,
             @Valid @RequestBody RoleUpdateDTO dto){
         return ResponseEntity.ok(authService.updateUserRole(id,dto));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable String id){
+        authService.deleteUser(id);
+        return ResponseEntity.ok("User deleted successfully");
     }
 
 }
