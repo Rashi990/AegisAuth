@@ -42,6 +42,15 @@ public class AuthService {
                 .toList();
     }
 
+    public List<UserDTO> searchUsers(String username){
+
+        return userRepository
+                .findByUsernameContainingIgnoreCase(username)
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
     public UserDTO getUserById(String id){
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() ->

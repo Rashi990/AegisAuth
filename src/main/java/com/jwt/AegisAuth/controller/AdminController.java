@@ -26,6 +26,11 @@ public class AdminController {
         return authService.getAllUsers();
     }
 
+    @GetMapping("/users/search")
+    public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String username){
+        return ResponseEntity.ok(authService.searchUsers(username));
+    }
+
     @GetMapping("/users/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable String id){
         return ResponseEntity.ok(authService.getUserById(id));
