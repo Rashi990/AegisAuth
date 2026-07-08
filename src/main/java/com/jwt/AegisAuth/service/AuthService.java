@@ -8,6 +8,7 @@ import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -45,14 +46,14 @@ public class AuthService {
                 .toList();
     }
 
-    public Page<UserDTO> getUSers(int page, int size){
-        Pageable pageable = PageRequest.of(page,size);
+    public Page<UserDTO> getUSers(int page, int size, String sort, String direction){
+        Sort.Direction dir = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page,size,Sort.by(dir,sort));
         return userRepository.findAll(pageable)
                 .map(this::mapToDTO);
     }
 
     public List<UserDTO> searchUsers(String username){
-
         return userRepository
                 .findByUsernameContainingIgnoreCase(username)
                 .stream()
@@ -62,8 +63,7 @@ public class AuthService {
 
     public UserDTO getUserById(String id){
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return mapToDTO(user);
     }
 
@@ -81,8 +81,7 @@ public class AuthService {
 
     public void deleteUser(String id){
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         userRepository.delete(user);
     }
 
@@ -152,8 +151,7 @@ public class AuthService {
                 .getName();
 
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(()->
-                        new ResourceNotFoundException("User not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
 
         return new CurrentUserDTO(
                 user.getId(),
@@ -168,8 +166,7 @@ public class AuthService {
             RoleUpdateDTO dto){
 
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         user.setRole(dto.getRole());
         return mapToDTO(userRepository.save(user));

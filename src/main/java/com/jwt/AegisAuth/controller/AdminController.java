@@ -30,8 +30,10 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<Page<UserDTO>> getUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size){
-        return ResponseEntity.ok(authService.getUSers(page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "username") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+        return ResponseEntity.ok(authService.getUSers(page, size, sort, direction));
     }
 
     @GetMapping("/users/search")
