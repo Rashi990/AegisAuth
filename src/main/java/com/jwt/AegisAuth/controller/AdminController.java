@@ -4,6 +4,7 @@ import com.jwt.AegisAuth.dto.RoleUpdateDTO;
 import com.jwt.AegisAuth.dto.UserDTO;
 import com.jwt.AegisAuth.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,16 @@ public class AdminController {
         this.authService = authService;
     }
 
-    @GetMapping("/users")
+    @GetMapping("/users/all")
     public List<UserDTO> getAllUsers() {
         return authService.getAllUsers();
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<Page<UserDTO>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(authService.getUSers(page, size));
     }
 
     @GetMapping("/users/search")

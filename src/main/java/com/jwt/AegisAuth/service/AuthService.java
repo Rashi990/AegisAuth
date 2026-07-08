@@ -5,6 +5,9 @@ import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.exception.BadRequestException;
 import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,6 +43,12 @@ public class AuthService {
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
+    }
+
+    public Page<UserDTO> getUSers(int page, int size){
+        Pageable pageable = PageRequest.of(page,size);
+        return userRepository.findAll(pageable)
+                .map(this::mapToDTO);
     }
 
     public List<UserDTO> searchUsers(String username){
