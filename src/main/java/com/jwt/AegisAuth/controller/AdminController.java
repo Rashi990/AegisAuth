@@ -4,9 +4,12 @@ import com.jwt.AegisAuth.dto.RoleUpdateDTO;
 import com.jwt.AegisAuth.dto.UserDTO;
 import com.jwt.AegisAuth.service.AuthService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin")
 @PreAuthorize("hasRole('ADMIN')")
+@Validated
 public class AdminController {
 
     private final AuthService authService;
@@ -29,16 +33,25 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<Page<UserDTO>> getUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "username") String sort,
-            @RequestParam(defaultValue = "asc") String direction) {
-        return ResponseEntity.ok(authService.getUSers(page, size, sort, direction));
-    }
 
-    @GetMapping("/users/search")
-    public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String username){
-        return ResponseEntity.ok(authService.searchUsers(username));
+            @Min(0)
+            @RequestParam(defaultValue = "0") int page,
+
+            @Min(1)
+            @Max(100)
+            @RequestParam(defaultValue = "10") int size,
+
+            @RequestParam(defaultValue = "username") String sort,
+
+            @RequestParam(defaultValue = "asc") String direction,
+
+            @RequestParam(required = false) String role,
+
+            @RequestParam(required = false) String username,
+
+            @RequestParam(required = false) String email){
+
+        return ResponseEntity.ok(authService.getUsers(page, size, sort, direction, role, username, email));
     }
 
     @GetMapping("/users/{id}")

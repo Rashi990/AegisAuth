@@ -46,19 +46,27 @@ public class AuthService {
                 .toList();
     }
 
-    public Page<UserDTO> getUSers(int page, int size, String sort, String direction){
+    public Page<UserDTO> getUsers(int page, int size, String sort, String direction, String role, String username, String email){
         Sort.Direction dir = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page,size,Sort.by(dir,sort));
+
+        if (role != null && !role.isBlank()){
+            return userRepository.findByRole(role,pageable)
+                    .map(this::mapToDTO);
+        }
+
+        if(username != null && !username.isBlank()){
+            return userRepository.findByUsernameContainingIgnoreCase(username,pageable)
+                    .map(this::mapToDTO);
+        }
+
+        if(email != null && !email.isBlank()){
+            return userRepository.findByEmailContainingIgnoreCase(email,pageable)
+                    .map(this::mapToDTO);
+        }
+
         return userRepository.findAll(pageable)
                 .map(this::mapToDTO);
-    }
-
-    public List<UserDTO> searchUsers(String username){
-        return userRepository
-                .findByUsernameContainingIgnoreCase(username)
-                .stream()
-                .map(this::mapToDTO)
-                .toList();
     }
 
     public UserDTO getUserById(String id){
@@ -140,7 +148,8 @@ public class AuthService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getUsername()
+                user.getUsername(),
+                user.getRole()
         );
     }
 
@@ -161,10 +170,7 @@ public class AuthService {
         );
     }
 
-    public UserDTO updateUserRole(
-            String id,
-            RoleUpdateDTO dto){
-
+    public UserDTO updateUserRole(String id, RoleUpdateDTO dto){
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
