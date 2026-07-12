@@ -1,9 +1,11 @@
 package com.jwt.AegisAuth.service;
 
 import com.jwt.AegisAuth.dto.*;
+import com.jwt.AegisAuth.entity.RefreshTokenEntity;
 import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.exception.BadRequestException;
 import com.jwt.AegisAuth.exception.ResourceNotFoundException;
+import com.jwt.AegisAuth.repository.RefreshTokenRepository;
 import com.jwt.AegisAuth.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,12 +33,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService, RefreshTokenService refreshTokenService, RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public List<UserDTO> getAllUsers(){
@@ -94,7 +98,7 @@ public class AuthService {
     }
 
     //Login
-    public LoginResponseDTO login(LoginRequestDTO loginRequestDTO){
+    public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
 
         try {
             authenticationManager.authenticate
@@ -102,26 +106,67 @@ public class AuthService {
                             loginRequestDTO.getUsername(),
                             loginRequestDTO.getPassword())
                     );
-        }catch (BadCredentialsException e){
-            return new LoginResponseDTO(null, null, "Invalid username or password", "error");
+        } catch (BadCredentialsException e) {
+            return new LoginResponseDTO(
+                    null,
+                    null,
+                    null,
+                    "Invalid username or password",
+                    "error");
         }
 
-        //Fetch real user from DB
-        UserEntity user = userRepository
-                .findByUsername(loginRequestDTO.getUsername())
-                .orElseThrow(()->new ResourceNotFoundException("User not found"));
+        //Fetch authenticated user
+        UserEntity user = userRepository.findByUsername(loginRequestDTO.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Map<String, Object> claims = new HashMap<String,Object>();
-        claims.put("role",user.getRole());
-        claims.put("email",user.getEmail());
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole());
+        claims.put("email", user.getEmail());
         claims.put("username", user.getUsername());
 
-        String token = jwtService.getJWTToken(user.getUsername(), claims);
+        // Generate Access Token
+        String accessToken = jwtService.getJWTToken(user.getUsername(), claims);
 
-        //debug
-        System.out.println("Role from token: " + jwtService.getFieldFromToken(token,"role"));
+        // Generate Refresh Token
+        RefreshTokenEntity refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
 
-        return new LoginResponseDTO(token, LocalDateTime.now(), null, "SUCCESS");
+        // Debug
+        System.out.println("Role from token: " + jwtService.getFieldFromToken(accessToken, "role"));
+
+        return new LoginResponseDTO(
+                accessToken,
+                refreshToken.getToken(),
+                LocalDateTime.now(),
+                null,
+                "SUCCESS"
+        );
+    }
+
+    // Refresh Token
+    public LoginResponseDTO refreshToken(String refreshToken) {
+
+        RefreshTokenEntity storedToken = refreshTokenService.getByToken(refreshToken);
+
+        refreshTokenService.verifyExpiration(storedToken);
+
+        UserEntity user = userRepository.findByUsername(storedToken.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("role", user.getRole());
+        claims.put("email", user.getEmail());
+        claims.put("username", user.getUsername());
+
+        String accessToken = jwtService.getJWTToken(user.getUsername(), claims);
+
+        return new LoginResponseDTO(
+                accessToken,
+                storedToken.getToken(),
+                LocalDateTime.now(),
+                null,
+                "SUCCESS"
+        );
     }
 
     //Register

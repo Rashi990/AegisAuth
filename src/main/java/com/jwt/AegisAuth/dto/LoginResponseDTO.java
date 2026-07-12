@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 @Data
 public class LoginResponseDTO {
 
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private LocalDateTime time;
     private String error;
     private String message;

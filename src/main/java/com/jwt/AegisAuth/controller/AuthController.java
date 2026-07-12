@@ -38,11 +38,16 @@ public class AuthController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<CurrentUserDTO> getCurrentUser(){
-        return ResponseEntity.ok(authService.getCurrentUser());
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDTO> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO request) {
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUserDTO> getCurrentUser() {
+        return ResponseEntity.ok(authService.getCurrentUser());
+    }
 }
+
 
 
