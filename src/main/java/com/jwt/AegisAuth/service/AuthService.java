@@ -5,22 +5,18 @@ import com.jwt.AegisAuth.entity.RefreshTokenEntity;
 import com.jwt.AegisAuth.entity.UserEntity;
 import com.jwt.AegisAuth.exception.BadRequestException;
 import com.jwt.AegisAuth.exception.ResourceNotFoundException;
-import com.jwt.AegisAuth.repository.RefreshTokenRepository;
 import com.jwt.AegisAuth.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -37,7 +33,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final BlacklistService blacklistService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService, RefreshTokenService refreshTokenService, RefreshTokenRepository refreshTokenRepository, BlacklistService blacklistService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService, RefreshTokenService refreshTokenService, BlacklistService blacklistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -163,9 +159,11 @@ public class AuthService {
 
         String accessToken = jwtService.getJWTToken(user.getUsername(), claims);
 
+        RefreshTokenEntity newRefreshToken = refreshTokenService.rotateRefreshToken(user.getUsername());
+
         return new LoginResponseDTO(
                 accessToken,
-                storedToken.getToken(),
+                newRefreshToken.getToken(),
                 LocalDateTime.now(),
                 null,
                 "SUCCESS"
@@ -231,11 +229,15 @@ public class AuthService {
         String header = request.getHeader("Authorization");
 
         if(header == null || !header.startsWith("Bearer ")){
-            return;
+            throw new BadRequestException("Access token is required");
         }
 
-        String token = header.substring(7);
-        blacklistService.blacklistToken(token, jwtService.getExpiration(token));
+        String accessToken = header.substring(7);
+
+        String username = jwtService.getUsername(accessToken);
+
+        blacklistService.blacklistToken(accessToken, jwtService.getExpiration(accessToken));
+        refreshTokenService.deleteByUsername(username);
         SecurityContextHolder.clearContext();
     }
 

@@ -35,14 +35,31 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new BadRequestException("Invalid refresh token"));
     }
 
-    public RefreshTokenEntity verifyExpiration(
-            RefreshTokenEntity token
-    ){
+    public RefreshTokenEntity verifyExpiration(RefreshTokenEntity token){
         if (token.getExpiryDate().isBefore(LocalDateTime.now())){
             refreshTokenRepository.delete(token);
             throw new BadRequestException("Refresh token expired");
         }
         return token;
+    }
+
+    public RefreshTokenEntity rotateRefreshToken(String username){
+
+        refreshTokenRepository.deleteByUsername(username);
+
+        RefreshTokenEntity newToken = RefreshTokenEntity.builder()
+                        .username(username)
+                        .token(UUID.randomUUID().toString())
+                        .expiryDate(LocalDateTime.now().plusDays(7))
+                        .build();
+
+        return refreshTokenRepository.save(newToken);
+    }
+
+    public void deleteByUsername(String username){
+
+        refreshTokenRepository.deleteByUsername(username);
+
     }
 
 }
