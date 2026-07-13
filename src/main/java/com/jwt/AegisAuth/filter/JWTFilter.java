@@ -1,7 +1,9 @@
 package com.jwt.AegisAuth.filter;
 
 import com.jwt.AegisAuth.entity.UserEntity;
+import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.UserRepository;
+import com.jwt.AegisAuth.service.BlacklistService;
 import com.jwt.AegisAuth.service.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,10 +25,12 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
     private final UserRepository userRepository;
+    private final BlacklistService blacklistService;
 
-    public JWTFilter(JWTService jwtService, UserRepository userRepository) {
+    public JWTFilter(JWTService jwtService, UserRepository userRepository, BlacklistService blacklistService) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.blacklistService = blacklistService;
     }
 
     @Override
@@ -44,13 +48,27 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         String jwtToken = authorization.substring(7);
+
+        // Check blacklist
+        if (blacklistService.isBlacklisted(jwtToken)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+                {
+                    "error": "Token has been logged out"
+                }
+                """);
+            return;
+        }
+
         String username;
 
         try {
             username = jwtService.getUsername(jwtToken);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired JWT token");
-            return;        }
+            return;
+        }
 
         if (username == null){
             filterChain.doFilter(request,response);
@@ -58,7 +76,7 @@ public class JWTFilter extends OncePerRequestFilter {
        }
 
         UserEntity userData = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (SecurityContextHolder.getContext().getAuthentication() != null &&
                 SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {

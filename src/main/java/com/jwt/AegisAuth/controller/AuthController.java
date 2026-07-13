@@ -3,6 +3,7 @@ package com.jwt.AegisAuth.controller;
 import com.jwt.AegisAuth.dto.*;
 import com.jwt.AegisAuth.service.AuthService;
 import com.jwt.AegisAuth.service.JWTService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,12 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<CurrentUserDTO> getCurrentUser() {
         return ResponseEntity.ok(authService.getCurrentUser());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request){
+        authService.logout(request);
+        return ResponseEntity.ok("Logged out successfully");
     }
 }
 

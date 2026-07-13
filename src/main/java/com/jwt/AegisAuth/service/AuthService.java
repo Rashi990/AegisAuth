@@ -7,6 +7,7 @@ import com.jwt.AegisAuth.exception.BadRequestException;
 import com.jwt.AegisAuth.exception.ResourceNotFoundException;
 import com.jwt.AegisAuth.repository.RefreshTokenRepository;
 import com.jwt.AegisAuth.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,13 +35,15 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final BlacklistService blacklistService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService, RefreshTokenService refreshTokenService, RefreshTokenRepository refreshTokenRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService, RefreshTokenService refreshTokenService, RefreshTokenRepository refreshTokenRepository, BlacklistService blacklistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.blacklistService = blacklistService;
     }
 
     public List<UserDTO> getAllUsers(){
@@ -223,5 +226,17 @@ public class AuthService {
         return mapToDTO(userRepository.save(user));
     }
 
+
+    public void logout(HttpServletRequest request){
+        String header = request.getHeader("Authorization");
+
+        if(header == null || !header.startsWith("Bearer ")){
+            return;
+        }
+
+        String token = header.substring(7);
+        blacklistService.blacklistToken(token, jwtService.getExpiration(token));
+        SecurityContextHolder.clearContext();
+    }
 
 }
