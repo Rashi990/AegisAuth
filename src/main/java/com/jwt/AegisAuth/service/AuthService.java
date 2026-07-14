@@ -220,7 +220,7 @@ public class AuthService {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        user.setRole(dto.getRole());
+        user.setRole(dto.getRole().toUpperCase());
         return mapToDTO(userRepository.save(user));
     }
 

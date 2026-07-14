@@ -40,8 +40,14 @@ public class JWTFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String authorization = request.getHeader("Authorization");
+        String path = request.getServletPath();
+        if (path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        String authorization = request.getHeader("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")){
            filterChain.doFilter(request,response);
            return;
